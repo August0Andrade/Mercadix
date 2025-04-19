@@ -124,6 +124,34 @@
     .ml-button:hover {
         background-color: #2563eb;
     }
+
+    /* Search suggestions dropdown styles */
+    .search-suggestions {
+        position: absolute;
+        width: 100%;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-top: none;
+        border-radius: 0 0 0.75rem 0.75rem;
+        z-index: 10;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .suggestion-item:hover {
+        background-color: #f3f4f6;
+    }
+    
+    .suggestion-item.selected {
+        background-color: #e5e7eb;
+    }
 </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -194,6 +222,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
+                <!-- Search suggestions dropdown -->
+                <div id="search-suggestions" class="search-suggestions hidden"></div>
             </div>
         </div>
         
@@ -386,6 +416,131 @@
                 pageLabels.forEach(l => setInactivePagePill(l));
                 setActivePagePill(this);
             });
+        });
+
+        // Popular search suggestions
+        const popularSearches = [
+            "iphone 15 pro",
+            "notebook lenovo",
+            "ps5",
+            "nintendo switch",
+            "airpods pro",
+            "samsung galaxy s24",
+            "macbook air m2",
+            "zapatillas nike",
+            "monitor 27 pulgadas",
+            "auriculares bluetooth",
+            "tablet samsung",
+            "gopro hero 12",
+            "tv 55 pulgadas 4k",
+            "xbox series x",
+            "smart watch"
+        ];
+        
+        const searchInput = document.getElementById('item');
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        let selectedIndex = -1;
+        
+        // Function to show search suggestions
+        function showSuggestions(query) {
+            if (!query) {
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+            
+            const matchingSearches = popularSearches.filter(search => 
+                search.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (matchingSearches.length === 0) {
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = '';
+            matchingSearches.forEach(search => {
+                const item = document.createElement('div');
+                item.classList.add('suggestion-item');
+                item.textContent = search;
+                item.addEventListener('click', () => {
+                    searchInput.value = search;
+                    suggestionsContainer.classList.add('hidden');
+                });
+                suggestionsContainer.appendChild(item);
+            });
+            
+            suggestionsContainer.classList.remove('hidden');
+            selectedIndex = -1;
+        }
+        
+        // Event listener for input changes
+        searchInput.addEventListener('input', () => {
+            showSuggestions(searchInput.value);
+        });
+        
+        // Event listener for focus
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value) {
+                showSuggestions(searchInput.value);
+            }
+        });
+        
+        // Handle keyboard navigation for suggestions
+        searchInput.addEventListener('keydown', (e) => {
+            const items = suggestionsContainer.querySelectorAll('.suggestion-item');
+            
+            if (items.length === 0) return;
+            
+            // Down arrow
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelectionStyle(items);
+            }
+            
+            // Up arrow
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelectionStyle(items);
+            }
+            
+            // Enter key
+            if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                searchInput.value = items[selectedIndex].textContent;
+                suggestionsContainer.classList.add('hidden');
+            }
+            
+            // Escape key
+            if (e.key === 'Escape') {
+                suggestionsContainer.classList.add('hidden');
+                selectedIndex = -1;
+            }
+        });
+        
+        // Function to update the selected item style
+        function updateSelectionStyle(items) {
+            Array.from(items).forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('selected');
+                    // Scroll into view if needed
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            if (selectedIndex >= 0) {
+                searchInput.value = items[selectedIndex].textContent;
+            }
+        }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.classList.add('hidden');
+            }
         });
     });
 </script>
