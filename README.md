@@ -1,5 +1,7 @@
 # Mercadix: Price Analysis for Mercado Libre
 
+Wiki: https://deepwiki.com/pyoneerC/Mercadix
+
 ![GitHub repo size](https://img.shields.io/github/repo-size/pyoneerC/mercado-libre-price-chart)
 ![Website](https://img.shields.io/website?url=https%3A%2F%2Fmercado-libre-price-chart.vercel.app)
 ![GitHub License](https://img.shields.io/github/license/pyoneerc/mercado-libre-price-chart)
